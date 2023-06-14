@@ -1,4 +1,73 @@
 <!DOCTYPE html>
+<html>
+<head>
+  <title>Table Column Search and Sort</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <input type="text" id="search-input" placeholder="Search...">
+  <br>
+  <table id="my-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Country</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>John</td>
+        <td>25</td>
+        <td>USA</td>
+      </tr>
+      <tr>
+        <td>Sara</td>
+        <td>30</td>
+        <td>Canada</td>
+      </tr>
+      <tr>
+        <td>Mark</td>
+        <td>28</td>
+        <td>Australia</td>
+      </tr>
+      <tr>
+        <td>Jane</td>
+        <td>22</td>
+        <td>USA</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    $(document).ready(function() {
+      $('#search-input').on('input', function() {
+        var searchText = $(this).val().toLowerCase();
+
+        $('#my-table tbody tr').hide().filter(function() {
+          var columnText = $(this).find('td:nth-child(1)').text().toLowerCase();
+          return columnText.includes(searchText);
+        }).show();
+
+        sortTableByFirstName();
+      });
+
+      function sortTableByFirstName() {
+        var rows = $('#my-table tbody tr').get();
+        rows.sort(function(a, b) {
+          var firstNameA = $(a).find('td:first').text().toLowerCase();
+          var firstNameB = $(b).find('td:first').text().toLowerCase();
+          return firstNameA.localeCompare(firstNameB);
+        });
+        $.each(rows, function(index, row) {
+          $('#my-table tbody').append(row);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -393,6 +462,78 @@ $(document).ready(function() {
   </script>
 </body>
 </html>
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Table Column Search and Sort</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <input type="text" id="search-input" placeholder="Search...">
+  <br>
+  <table id="my-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Country</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>John</td>
+        <td>25</td>
+        <td>USA</td>
+      </tr>
+      <tr>
+        <td>Sara</td>
+        <td>30</td>
+        <td>Canada</td>
+      </tr>
+      <tr>
+        <td>Mark</td>
+        <td>28</td>
+        <td>Australia</td>
+      </tr>
+      <tr>
+        <td>Jane</td>
+        <td>22</td>
+        <td>USA</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    $(document).ready(function() {
+      $('#search-input').on('input', function() {
+        var searchText = $(this).val().toLowerCase();
+
+        $('#my-table tbody tr').hide().filter(function() {
+          var columnText = $(this).find('td:nth-child(1)').text().toLowerCase();
+          return columnText.includes(searchText);
+        }).show();
+
+        sortTableByFirstName();
+      });
+
+      function sortTableByFirstName() {
+        var rows = $('#my-table tbody tr').get();
+        rows.sort(function(a, b) {
+          var firstNameA = $(a).find('td:first').text().toLowerCase();
+          var firstNameB = $(b).find('td:first').text().toLowerCase();
+          return firstNameA.localeCompare(firstNameB);
+        });
+        $.each(rows, function(index, row) {
+          $('#my-table tbody').append(row);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+
 
 
 

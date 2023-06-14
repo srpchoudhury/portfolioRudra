@@ -213,3 +213,84 @@
 </body>
 </html>
 
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dynamic Form</title>
+  <style>
+    table {
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid black;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Age</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="text" class="name"></td>
+          <td><input type="number" class="age"></td>
+          <td><button class="delete">Delete</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <button id="addButton">Add New</button>
+    <button id="submitButton">Submit</button>
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
+
+
+$(document).ready(function() {
+  // Add new row
+  $("#addButton").click(function() {
+    var newRow = '<tr>' +
+      '<td><input type="text" class="name"></td>' +
+      '<td><input type="number" class="age"></td>' +
+      '<td><button class="delete">Delete</button></td>' +
+      '</tr>';
+    $("#dataTable tbody").append(newRow);
+  });
+
+  // Delete row
+  $(document).on("click", ".delete", function() {
+    $(this).closest("tr").remove();
+  });
+
+  // Submit form
+  $("#submitButton").click(function() {
+    var data = [];
+    $("#dataTable tbody tr").each(function() {
+      var name = $(this).find(".name").val();
+      var age = $(this).find(".age").val();
+      if (name && age) {
+        data.push({ name: name, age: age });
+      }
+    });
+    // Display data in table format
+    var table = "<table><thead><tr><th>Name</th><th>Age</th></tr></thead><tbody>";
+    $.each(data, function(index, item) {
+      table += "<tr><td>" + item.name + "</td><td>" + item.age + "</td></tr>";
+    });
+    table += "</tbody></table>";
+    $("#container").append(table);
+  });
+});
+

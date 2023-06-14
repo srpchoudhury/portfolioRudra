@@ -294,3 +294,46 @@ $(document).ready(function() {
   });
 });
 
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Day Calculator</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <label for="current-day">Enter the current day:</label>
+  <input type="text" id="current-day">
+  <br>
+  <label for="days-in-future">Enter the number of days in the future:</label>
+  <input type="text" id="days-in-future">
+  <br>
+  <button id="calculate-button">Calculate</button>
+  <br>
+  <p id="result"></p>
+
+  <script>
+    $(document).ready(function() {
+      $('#calculate-button').click(function() {
+        var currentDay = $('#current-day').val();
+        var daysInFuture = parseInt($('#days-in-future').val());
+
+        // Define an array of weekdays starting from Sunday
+        var weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        // Get the index of the current day
+        var currentDayIndex = weekdays.indexOf(currentDay);
+
+        // Calculate the future day index
+        var futureDayIndex = (currentDayIndex + daysInFuture) % 7;
+
+        // Get the future day name
+        var futureDay = weekdays[futureDayIndex];
+
+        // Display the result
+        $('#result').text('After ' + daysInFuture + ' days, the day is ' + futureDay);
+      });
+    });
+  </script>
+</body>
+</html>
+

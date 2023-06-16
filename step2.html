@@ -113,3 +113,88 @@
 </body>
 </html>
 
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .address-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .address-container input[type="text"] {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="address-container">
+        <div>
+            Present Address:<br>
+            <input type="text" id="present-address1" placeholder="Address Line 1"><br>
+            <input type="text" id="present-address2" placeholder="Address Line 2"><br>
+            <input type="text" id="present-city" placeholder="City"><br>
+            <input type="text" id="present-state" placeholder="State"><br>
+        </div>
+        <div>
+            Permanent Address:<br>
+            <input type="text" id="permanent-address1" placeholder="Address Line 1"><br>
+            <input type="text" id="permanent-address2" placeholder="Address Line 2"><br>
+            <input type="text" id="permanent-city" placeholder="City"><br>
+            <input type="text" id="permanent-state" placeholder="State"><br>
+        </div>
+    </div>
+    <div>
+        <input type="checkbox" id="same-address">
+        <label for="same-address">Same as Present Address</label>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Set the permanent address fields as disabled by default
+            $('#permanent-address1').prop('disabled', true);
+            $('#permanent-address2').prop('disabled', true);
+            $('#permanent-city').prop('disabled', true);
+            $('#permanent-state').prop('disabled', true);
+
+            // Check the checkbox by default
+            $('#same-address').prop('checked', true);
+
+            // Handle checkbox change event
+            $('#same-address').change(function() {
+                if ($(this).is(':checked')) {
+                    // Copy values from present address to permanent address
+                    $('#permanent-address1').val($('#present-address1').val());
+                    $('#permanent-address2').val($('#present-address2').val());
+                    $('#permanent-city').val($('#present-city').val());
+                    $('#permanent-state').val($('#present-state').val());
+
+                    // Disable permanent address fields
+                    $('#permanent-address1').prop('disabled', true);
+                    $('#permanent-address2').prop('disabled', true);
+                    $('#permanent-city').prop('disabled', true);
+                    $('#permanent-state').prop('disabled', true);
+                } else {
+                    // Clear values from permanent address fields
+                    $('#permanent-address1').val('');
+                    $('#permanent-address2').val('');
+                    $('#permanent-city').val('');
+                    $('#permanent-state').val('');
+
+                    // Enable permanent address fields
+                    $('#permanent-address1').prop('disabled', false);
+                    $('#permanent-address2').prop('disabled', false);
+                    $('#permanent-city').prop('disabled', false);
+                    $('#permanent-state').prop('disabled', false);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+

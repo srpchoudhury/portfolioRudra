@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Age Calculator</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <label for="dob">Date of Birth:</label>
+  <input type="date" id="dob">
+  
+  <br><br>
+  
+  <label for="age">Age:</label>
+  <span id="age"></span>
+  
+  <script>
+    $(document).ready(function() {
+      $('#dob').on('change', function() {
+        var dob = new Date($(this).val());
+        var today = new Date();
+        var age = today.getFullYear() - dob.getFullYear();
+        var monthDiff = today.getMonth() - dob.getMonth();
+        var dayDiff = today.getDate() - dob.getDate();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+          age--;
+        }
+        
+        $('#age').text(age);
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Address Auto-fill</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <h4>Present Address:</h4>
+  <label for="presentAddressLine1">Address Line 1:</label>
+  <input type="text" id="presentAddressLine1">
+  
+  <br><br>
+  
+  <label for="presentAddressLine2">Address Line 2:</label>
+  <input type="text" id="presentAddressLine2">
+  
+  <br><br>
+  
+  <label for="presentCity">City:</label>
+  <input type="text" id="presentCity">
+  
+  <br><br>
+  
+  <label for="presentState">State:</label>
+  <input type="text" id="presentState">
+  
+  <br><br>
+  
+  <h4>Permanent Address:</h4>
+  <label for="permanentAddressLine1">Address Line 1:</label>
+  <input type="text" id="permanentAddressLine1">
+  
+  <br><br>
+  
+  <label for="permanentAddressLine2">Address Line 2:</label>
+  <input type="text" id="permanentAddressLine2">
+  
+  <br><br>
+  
+  <label for="permanentCity">City:</label>
+  <input type="text" id="permanentCity">
+  
+  <br><br>
+  
+  <label for="permanentState">State:</label>
+  <input type="text" id="permanentState">
+  
+  <br><br>
+  
+  <label for="sameAddress">Same Address:</label>
+  <input type="checkbox" id="sameAddress">
+  
+  <script>
+    $(document).ready(function() {
+      $('#sameAddress').on('change', function() {
+        if ($(this).is(':checked')) {
+          var presentAddressLine1 = $('#presentAddressLine1').val();
+          var presentAddressLine2 = $('#presentAddressLine2').val();
+          var presentCity = $('#presentCity').val();
+          var presentState = $('#presentState').val();
+          
+          $('#permanentAddressLine1').val(presentAddressLine1);
+          $('#permanentAddressLine2').val(presentAddressLine2);
+          $('#permanentCity').val(presentCity);
+          $('#permanentState').val(presentState);
+        } else {
+          $('#permanentAddressLine1').val('');
+          $('#permanentAddressLine2').val('');
+          $('#permanentCity').val('');
+          $('#permanentState').val('');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+

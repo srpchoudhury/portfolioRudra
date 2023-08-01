@@ -1,3 +1,65 @@
+function printPatterns(rows) {
+    // Loop through each row
+    for (let i = 0; i < rows; i++) {
+        let pattern1 = "";
+        let pattern2 = "";
+
+        // Create spaces before the "X" for the first pattern
+        for (let j = 0; j < rows - i - 1; j++) {
+            pattern1 += " ";
+        }
+
+        // Create the "X" for the first pattern
+        pattern1 += "X";
+
+        // Create spaces between the "X" characters for the first pattern
+        for (let k = 0; k < 2 * i - 1; k++) {
+            pattern1 += " ";
+        }
+
+        // Create the second "X" (skip for the central row) for the first pattern
+        if (i !== 0) {
+            pattern1 += "X";
+        }
+
+        // Create spaces between the patterns
+        pattern1 += "  ";
+
+        // Create spaces for the second pattern
+        for (let j = 0; j < rows - i - 1; j++) {
+            pattern2 += " ";
+        }
+
+        // Create the "X" for the second pattern
+        pattern2 += "X";
+
+        // Create spaces between the "X" characters for the second pattern
+        for (let k = 0; k < 2 * i - 1; k++) {
+            pattern2 += " ";
+        }
+
+        // Create the second "X" (skip for the central row) for the second pattern
+        if (i !== rows - 1) {
+            pattern2 += "X";
+        }
+
+        // Combine both patterns and print the row
+        console.log(pattern1 + pattern2);
+    }
+}
+
+// Set the number of rows for the pattern
+const rows = 5;
+
+// Call the function to print both patterns
+printPatterns(rows);
+
+
+
+
+
+
+
 
 public class PrintPattern {
     public static void main(String[] args) {

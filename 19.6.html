@@ -5,6 +5,31 @@ function printPattern() {
 
     for (let i = 0; i < rows; i++) {
         let pattern = '';
+        for (let j = 0; j < size; j++) {
+            if (j === i || j === size - i - 1) {
+                pattern += 'X ';
+            } else {
+                pattern += '  ';
+            }
+        }
+        console.log(pattern);
+    }
+}
+
+printPattern();
+
+
+
+
+
+
+
+function printPattern() {
+    const rows = 5;
+    const size = rows * 2 - 1;
+
+    for (let i = 0; i < rows; i++) {
+        let pattern = '';
         for (let j = 0; j < i * 2; j++) {
             pattern += ' ';
         }

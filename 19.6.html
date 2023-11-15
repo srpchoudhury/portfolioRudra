@@ -1,6 +1,20 @@
 live:.cid.4df12018ec95ab6d
 https://drive.google.com/drive/u/0/mobile/folders/17R8rXghKfcl2Ty2-GHUDEg9dxwQL5hRp?usp=share_link
 
+
+
+
+
+SELECT Item_Id, SUM(Quantity) AS TotalQuantity
+FROM Stock_Entry
+WHERE Is_Status = 1 
+    AND CONVERT(DATETIME, Date, 103) BETWEEN CONVERT(DATETIME, '01-01-2020', 103) AND CONVERT(DATETIME, '15-11-2023', 103)
+GROUP BY Item_Id;
+
+
+
+
+
 fccccvc
 
 jkndjdjhdhdhhjbvffffm reads an input instance I of Set Cover and convert it to an input instance l' of Sparse Monotone Disjunction, such that

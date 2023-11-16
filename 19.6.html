@@ -21,7 +21,7 @@ FROM (
     WHERE Is_Status = 1 
         AND CONVERT(DATETIME, '01-01-2020', 103) < CONVERT(DATETIME, '15-11-2023', 103)
     GROUP BY Item_Id
-) AS SE
+) AS SE  
 FULL JOIN (
     SELECT Item_Id, ISNULL(SUM(Quantity), 0) AS TotalQuantity
     FROM Store_Transfer 

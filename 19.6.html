@@ -12,12 +12,26 @@ WHERE Is_Status = 1
 GROUP BY Item_Id;
 
 
- SELECT Item_Id, ISNULL(SUM(Quantity), 0) as openingQuantity
-FROM Stock_Entry
-WHERE Is_Status = 1 
-    
-    AND CONVERT(DATETIME, Date, 103) BETWEEN CONVERT(DATETIME, '01-01-2020', 103) AND CONVERT(DATETIME, '15-11-2023', 103)
-GROUP BY Item_Id;
+	 SELECT 
+    SE.Item_Id,
+    ISNULL(SE.TotalQuantity, 0) + ISNULL(ST.TotalQuantity, 0) AS CombinedTotalQty
+FROM (
+    SELECT Item_Id, ISNULL(SUM(Quantity), 0) AS TotalQuantity
+    FROM Stock_Entry 
+    WHERE Is_Status = 1 
+        AND CONVERT(DATETIME, '01-01-2020', 103) < CONVERT(DATETIME, '15-11-2023', 103)
+    GROUP BY Item_Id
+) AS SE
+FULL JOIN (
+    SELECT Item_Id, ISNULL(SUM(Quantity), 0) AS TotalQuantity
+    FROM Store_Transfer 
+    WHERE Status = 1 
+        AND StockType = 'Receive' 
+        AND CONVERT(DATETIME, '01-01-2020', 103) < CONVERT(DATETIME, '15-11-2023', 103)
+    GROUP BY Item_Id
+) AS ST ON SE.Item_Id = ST.Item_Id;
+
+
 
 
 

@@ -698,6 +698,24 @@ DECLARE @ToDate DATETIME = '2023-11-16';
 	     
 ================procedure Queruy ===================
 ====================================================
+first four column
+================
+
+CREATE PROCEDURE GetItemDetailsWithSerial
+AS
+BEGIN
+    SELECT ROW_NUMBER() OVER (ORDER BY id.category_name) AS SERIAL,
+           (id.item_name + '-' + id.UPS_code) AS item_name,
+           id.item_id,
+           id.category_name
+    FROM item_details AS id
+    INNER JOIN Stock_Entry AS se ON id.item_id = se.Item_Id
+    WHERE se.Quantity != 0 AND se.Is_Status = 1
+    GROUP BY id.item_name, id.item_id, id.category_name, id.UPS_code
+    ORDER BY category_name ASC;
+END;
+EXEC GetItemDetailsWithSerial;
+
 
 for opening
 ==========

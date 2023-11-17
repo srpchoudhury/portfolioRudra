@@ -892,6 +892,64 @@ DECLARE @ToDate DATETIME = '2023-11-16';
 -- Execute the stored procedure
 EXEC CalculateTotalQuantity @ItemId, @FromDate, @ToDate;
 
+return
+================
+CREATE PROCEDURE CalculateWastageReturnType
+    @ItemId INT,
+    @FromDate DATETIME,
+    @ToDate DATETIME
+AS
+BEGIN
+    -- Calculate the sum of wastage for Return Type
+    SELECT
+        SUM(Wastage) AS ReturnType,
+        Item_Id
+    FROM
+        Wastage_Details
+    WHERE
+        CONVERT(DATETIME, Date, 103) BETWEEN CONVERT(DATETIME, @FromDate, 103) AND CONVERT(DATETIME, @ToDate, 103)
+        AND ((@ItemId IS NULL) OR (Item_Id = @ItemId)) AND Wastage_Type = 'Return'
+    GROUP BY
+        Item_Id;
+END;
+-- Declare variables
+DECLARE @ItemId INT = NULL;
+DECLARE @FromDate DATETIME = '2020-02-04';
+DECLARE @ToDate DATETIME = '2023-11-16';
+
+-- Execute the stored procedure
+EXEC CalculateWastageReturnType @ItemId, @FromDate, @ToDate;
+
+
+damage
+======
+CREATE PROCEDURE CalculateWastageDamageType
+    @ItemId INT,
+    @FromDate DATETIME,
+    @ToDate DATETIME
+AS
+BEGIN
+    -- Calculate the sum of wastage for Damage Type
+    SELECT
+        SUM(Wastage) AS DamageType,
+        Item_Id
+    FROM
+        Wastage_Details
+    WHERE
+        CONVERT(DATETIME, Date, 103) BETWEEN CONVERT(DATETIME, @FromDate, 103) AND CONVERT(DATETIME, @ToDate, 103)
+        AND ((@ItemId IS NULL) OR (Item_Id = @ItemId)) AND Wastage_Type = 'Damage'
+    GROUP BY
+        Item_Id;
+END;
+
+-- Declare variables
+DECLARE @ItemId INT = NULL;
+DECLARE @FromDate DATETIME = '2020-02-04';
+DECLARE @ToDate DATETIME = '2023-11-16';
+
+-- Execute the stored procedure
+EXEC CalculateWastageDamageType @ItemId, @FromDate, @ToDate;
+
 
 
 

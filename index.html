@@ -1,36 +1,785 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pfnjsjhdwjdjxhduxhxuxubba</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body class="container">
-    <div class="hero">
-      <nav>
-        <img src="logo.png" alt="" />
-        <ul>
-          <li><a href="#">HOME</a></li>
-          <li><a href="#">ABOUT</a></li>
-          <li><a href="#">PORTFOLIO</a></li>
-          <li><a href="#">SERVICES</a></li>
-          <li><a href="#">HIRE ME</a></li>
-        </ul>
-      </nav>
-      <div class="detel">
-        <h1>I,m S Rudra Prasad <span>Choudhury</span></h1>
-        <p>
-          This is my official portfolio website to show all <br />Details and
-          work exepriences web devlopment
-        </p>
-        <a href="#">DOWNLOAD CV</a>
-      </div>
-      <div class="images">
-        <img src="yellowstyle.png" class="shape" alt="" />
-        <img src="yellowPic.png" class="boy" alt="" />
-      </div>
+    public class DropdownItemModel
+    {
+        public int item_id { get; set; }
+        public int category_id { get; set; }
+        public string category_name { get; set; }
+        public int SubCatagory_id { get; set; }
+        public string SubCatagory_Name { get; set; }
+    }
+
+
+    using System;
+using OrmasPuri.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Web;
+using System.Web.Mvc;
+
+using System.Data.Entity;
+using iText.StyledXmlParser.Jsoup.Nodes;
+
+namespace OrmasPuri.Models
+{
+
+    public class AppModel
+    {
+        
+        public static List<SelectListItem> VALIDUSERselectListItems()
+        {
+            List<SelectListItem> items = new List<SelectListItem>();
+            items.Add(new SelectListItem { Text = "- Select -", Value = "" });
+            items.Add(new SelectListItem { Text = "Yes", Value = "true" });
+            items.Add(new SelectListItem { Text = "No", Value = "false" });
+            return items;
+        }
+        public static SelectList SelectListYesNo(string Selected = "")
+        {
+            List<SelectListItem> items = new List<SelectListItem>();
+            items.Add(new SelectListItem { Text = "- Select -", Value = "" });
+            items.Add(new SelectListItem { Text = "Yes", Value = "Yes" });
+            items.Add(new SelectListItem { Text = "No", Value = "No" });
+            return new SelectList(items, "Value", "Text", Selected);
+        }
+
+
+
+        public static string GenerateIndentNo()
+        {
+            string indNo = string.Empty;
+            try
+            {
+                string prefixName = "IND";
+
+                int FinYr;
+                string FY;
+                //string Dept;
+                string[] cons_array = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+                string cons;
+                string series;
+                FinYr = DateTime.Now.Year;
+                ApplicationContext _dbContext = new ApplicationContext();
+                //int temp = (Convert.ToInt32(_dbContext.TFRApplications.Where(w => w.FinYr == FinYr).Select(s => s.RequestNo).Count()) + 1);
+
+                int temp = (Convert.ToInt32(_dbContext.IndentItems.Where(w => w.CreatedOn.Year == FinYr).Select(s => s.IndentCode).Count()) + 1);
+                series = temp.ToString().PadLeft(5, '0');
+                int t = (temp / 9999);
+                cons = cons_array[t];
+                FY = FinYr.ToString().Substring(2, 2);
+                //Dept = Deptname.ToString().Substring(2, 2);
+                indNo = string.Concat(prefixName + FY + cons + series);
+
+                //appNo = string.Concat(Deptname + FY + cons + series);
+            }
+            catch (Exception ex)
+            {
+                if (Helpers.WriteExceptionsToEventLog)
+                { Helpers.WriteToErrorLog(ex, "GenerateIndentNo()"); }
+                else
+                { throw ex; }
+            }
+            return indNo;
+        }
+
+        public static string formatDate(DateTime? dt)
+            => dt == null ? "n/a" : ((DateTime)dt).ToString("dd/MM/yyyy");
+
+        public static List<SelectListItem> SelectListItemsFromFoodCategory()
+        {
+            List<SelectListItem> items = new List<SelectListItem>();
+            using (var dbContext = new ApplicationContext())
+            {
+                items = dbContext.FoodCategory.Where(r => r.is_status == true).OrderBy(o => o.category_name).Select(r => new SelectListItem { Text = r.category_name, Value = r.category_id.ToString() }).ToList();
+            }
+            items.Insert(0, new SelectListItem { Text = "- Select Category -", Value = "" });
+            return items;
+        }
+
+        public static SelectList SelectListItemsFromFoodCategory(string Text = "- Select Food Category -", string Selected = "")
+        {
+            List<SelectListItem> items = new List<SelectListItem>();
+            using (var db = new ApplicationContext())
+            {
+                items = db.FoodCategory.Where(r => r.is_status == true).OrderBy(o => o.category_name).Select(r => new SelectListItem { Text = r.category_name, Value = r.category_id.ToString() }).ToList();
+            }
+            items.Insert(0, new SelectListItem { Text = Text, Value = "" });
+            return new SelectList(items, "Value", "Text", Selected);
+        }
+    }
+
+    
+
+    public class ApiResult
+    {
+        public bool IsSuccessful { get; set; }
+        public object Data { get; set; }
+        public string Message { get; set; }
+    }
+    public class ApiResult<T>
+    {
+        public bool IsSuccessful { get; set; }
+        public object Data { get; set; }
+        public string Message { get; set; }
+    }
+
+}
+
+      @model List<OrmasPuri.Models.StockItemModel>
+
+
+@if (Model.Count > 0)
+{
+    //var Heading = "";
+
+    <div class="card" id="Div1">
+        <div class="card-header">
+            <h4 class="font-weight-bold text-center">Stock Report(s)</h4>
+            @*<div class="card-header-action">
+                    <a data-toggle="collapse" href="#collapseFilterData">
+                        <i class="fas fa-minus"></i>
+                    </a>
+                </div>*@
+
+        </div>
+        <div class="collapse show" id="collapseFilterData">
+
+            <div class="card-body">
+                <div class="font-weight-bold text-center mt-2">DATE: @ViewData["fromDate"] to @ViewData["toDate"] </div>
+              
+                    <div class="row">
+                        <div class="table table-responsive">
+                            <table class="table table-striped  table-sm table-bordered tblTokenDetails" id="tblTokenDetails" style="width:100%;padding-right:0;">
+                                <thead style="background-color: #afb5d5; ">
+                                    <tr>
+                                        <th>Sl No</th>
+                                        <th>Item Category</th>
+                                        <th>Item Name</th>
+                                        <th>Opening Quantity</th>
+                                        <th>In</th>
+                                        <th>Out</th>
+                                        <th>Return</th>
+                                        <th>Damage</th>
+                                        <th>Closing Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Select((data, index) => new { data, index }))
+                                    {
+                                        <tr>
+                                            <td style="text-align:center !important;vertical-align: middle !important;">
+                                                @(item.index + 1)
+                                            </td>
+                                            <td style="text-align:center !important;vertical-align: middle !important;">
+                                                @Html.DisplayFor(modelItem => item.data.item_name)
+                                            </td>
+                                            <td style="text-align:center !important;vertical-align: middle !important;">
+                                                @Html.DisplayFor(modelItem => item.data.category_name)
+                                            </td>
+                                            <td style="text-align:center !important;vertical-align: middle !important;">
+                                                @Html.DisplayFor(modelItem => item.data.OpeningQuantity)
+                                            </td>
+                                            <td style="text-align:center !important;vertical-align: middle !important;">
+                                                @Html.DisplayFor(modelItem => item.data.StockInQuantity)
+                                            </td>
+                                            <td style="text-align:center !important;vertical-align: middle !important;">
+                                                @Html.DisplayFor(modelItem => item.data.StockOutQuantity)
+                                            </td>
+                                            <td style="text-align:center !important;vertical-align: middle !important;">
+                                                @Html.DisplayFor(modelItem => item.data.ReturnQuantity)
+                                            </td>
+                                            <td style="text-align:center !important;vertical-align: middle !important;">
+                                                @Html.DisplayFor(modelItem => item.data.DamageQuantity)
+                                            </td>
+                                            <td style="text-align:center !important;vertical-align: middle !important;">
+                                                @Html.DisplayFor(modelItem => item.data.ClosingQuantity)
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+              
+            </div>
+        </div>
     </div>
-  </body>
-</html>
+}
+else
+{
+    <div class="text-center"> <h3 class="font-weight-bold">No Results</h3></div>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.tblTokenDetails').dataTable({
+            oLanguage: {
+                sLengthMenu: "<select>" +
+                    "<option value='10'>10</option>" +
+                    "<option value='20'>20</option>" +
+                    "<option value='100'>100</option>" +
+                    "<option value='-1'>All</option>" +
+                    "</select>"
+            },
+            "iDisplayLength": 10,
+            scrollY: 500,
+            scrollX: true,
+            scrollCollapse: true,
+            fixedColumns: true,
+            orderMulti: true,
+        });
+    });
+</script>
+
+
+        using OrmasPuri.Models;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using static iText.IO.Image.Jpeg2000ImageData;
+using static System.Data.Entity.Infrastructure.Design.Executor;
+
+namespace OrmasPuri.Controllers
+{
+    public class ReportController : Controller
+    {
+        // GET: Report
+        public ActionResult AttendanceReport()
+        {
+            return View();
+        }
+        public ActionResult DamagedProductReport()
+        {
+            return View();
+        }
+        public ActionResult ItemWiseReport()
+        {
+            return View();
+        }
+        public ActionResult InvoiceWiseReport()
+        {
+            return View();
+        }
+        public ActionResult SalesWiseReport()
+        {
+            return View();
+        }
+        public ActionResult PurchaseWiseReport()
+        {
+            return View();
+        }
+        /// <summary>
+        /// Stock Report
+        /// Author:S Rudra Prasad Choudhury
+        /// Description:-To find the  stocks Report.
+        /// </summary>
+        /// <param name="model">fromDate,toDate</param>
+
+        public ActionResult StockReport()
+        {
+            List<StockItemModel> models = new List<StockItemModel>();
+            try
+            {
+                using (ApplicationContext db = new ApplicationContext())
+                {
+
+                    DateTime today = DateTime.UtcNow.Date;
+                    string toDate = today.ToString("dd-MM-yyyy");
+
+                    DateTime lastWeekday = today.AddDays(-7);
+                    string fromDate = lastWeekday.ToString("dd-MM-yyyy");
+
+                    ViewData["FoodCategoryselectListItems"] = AppModel.SelectListItemsFromFoodCategory();
+                    // int ItemId = 5759;
+
+                    //models = db.Database.SqlQuery<StockItemModel>(
+                    //                 "EXEC sp_GetItemDetailsWithQuantity @FromDate, @ToDate",
+                    //                 //new SqlParameter("ItemId", ItemId),
+                    //                 new SqlParameter("FromDate", Convert.ToDateTime(fromDate)),
+                    //                 new SqlParameter("ToDate", Convert.ToDateTime(toDate))).ToList();
+
+
+                    ViewData["fromDate"] = fromDate;
+                    ViewData["toDate"] = toDate;
+
+
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return View(models);
+        }
+        public ActionResult ViewStockReport(string fromDate, string toDate, string itemId)
+        {
+            return PartialView("_StockReport", GetStockReport(fromDate, toDate, itemId));
+            //return View("CustomerOrderItem", GetCustomerOrderItems(Id));
+        }
+        public List<StockItemModel> GetStockReport(string fromDate, string toDate, string itemId)
+        {
+            ViewData["fromDate"] = fromDate;
+            ViewData["toDate"] = toDate;
+
+            List<StockItemModel> _model = new List<StockItemModel>();
+            try
+            {
+                using (ApplicationContext db = new ApplicationContext())
+                {
+                    DropdownItemModel dropdownItemModel = new DropdownItemModel();
+                    if (!string.IsNullOrEmpty(itemId))
+                    {
+                        int cid = Convert.ToInt32(itemId);
+                        dropdownItemModel = db.FoodCategory
+                            .Join(db.ItemDetails, fc => fc.category_id, id => id.category_id, (fc, id) => new { fc, id }).Where(x => x.fc.is_status == true && x.id.is_status == true)
+                            .Join(db.StockEntry, fc_id => fc_id.id.item_id, se => se.Item_Id, (fc_id, se) => new { fc_id, se })
+                            .Where(x => x.se.Is_Status == "1" && x.fc_id.fc.category_id == cid)
+                            .Select(s => new DropdownItemModel
+                            {
+                                item_id = s.fc_id.id.item_id
+                            }).FirstOrDefault();
+                    }
+                        SqlParameter itemIdParam = new SqlParameter("itemId", itemId);
+                        if (string.IsNullOrEmpty(itemId))
+                        {
+                            itemIdParam.Value = DBNull.Value;
+                        }
+                    if (fromDate != null && toDate != null)
+                    {
+                        SqlParameter[] parameter = {
+                         new SqlParameter("FromDate", Convert.ToDateTime(fromDate)),
+                         new SqlParameter("ToDate", Convert.ToDateTime(toDate)),
+                         new SqlParameter("ItemId",  itemIdParam.Value),
+                         new SqlParameter("Event", "ItemDetails")
+                         };
+
+                        List<StockItemModel> eventModel = db.Database.SqlQuery<StockItemModel>(
+                            "EXEC sp_StockReports @FromDate, @ToDate, @ItemId, @Event", parameter
+                        ).ToList();
+
+                        foreach (var item in eventModel)
+                        {
+                            // Fetch and update data for other events based on the item_id
+                            List<string> events = new List<string>
+                            {
+                              "OpeningQuantity",
+                              "StockInQuantity",
+                              "StockOutQuantity",
+                              "StockReturnQuantity",
+                              "StockDamageQuantity"
+                            };
+
+                            foreach (var eventName in events)
+                            {
+                                SqlParameter[] parameters = {
+                                     new SqlParameter("FromDate", Convert.ToDateTime(fromDate)),
+                                     new SqlParameter("ToDate", Convert.ToDateTime(toDate)),
+                                     new SqlParameter("ItemId", item.item_id),
+                                     new SqlParameter("Event", eventName)
+                                };
+
+                                StockItemModel eventValue = db.Database.SqlQuery<StockItemModel>(
+                                    "EXEC sp_StockReports @FromDate, @ToDate, @ItemId, @Event", parameters
+                                ).FirstOrDefault();
+
+
+                                switch (eventName)
+                                {
+                                    case "OpeningQuantity":
+                                        item.OpeningQuantity = eventValue?.OpeningQuantity ?? 0;
+                                        break;
+                                    case "StockInQuantity":
+                                        item.StockInQuantity = eventValue?.StockInQuantity ?? 0;
+                                        break;
+                                    case "StockOutQuantity":
+                                        item.StockOutQuantity = eventValue?.StockOutQuantity ?? 0;
+                                        break;
+                                    case "StockReturnQuantity":                                  
+                                        item.ReturnQuantity = eventValue?.ReturnQuantity ?? 0;
+                                        break;
+                                    case "StockDamageQuantity":
+                                        item.DamageQuantity = eventValue?.DamageQuantity ?? 0;
+                                        break;
+
+                                }
+                            }
+                            item.ClosingQuantity = item.OpeningQuantity +
+                                           item.StockInQuantity -
+                                           item.StockOutQuantity -
+                                           item.ReturnQuantity -
+                                           item.DamageQuantity;
+
+                            _model.Add(item);
+                        }
+                      
+                    }
+                    
+                }
+              
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return _model;
+        }
+
+
+        /// <summary>
+        /// Indent Wise Report
+        /// Author:SOURAV KUMAR DAS
+        /// Description:-To find the date wise Indent Report.
+        /// </summary>
+        /// <param name="model">fromDate,toDate</param>
+
+        public ActionResult IndentWiseReport(string fromDate, string toDate)
+        {
+            List<IndentRepoort> models = new List<IndentRepoort>();
+
+            try
+            {
+                using (ApplicationContext db = new ApplicationContext())
+                {
+                    if (string.IsNullOrEmpty(fromDate))
+                    {
+                        fromDate = DateTime.Now.AddDays(-30).ToString("dd/MM/yyyy");
+                    }
+                    if (string.IsNullOrEmpty(toDate))
+                    {
+                        toDate = DateTime.Now.ToString("dd/MM/yyyy 23:59:59");
+                    }
+                    else
+                    {
+                        toDate += " 23:59:59";
+                    }
+                    ViewData["fromDate"] = fromDate;
+                    ViewData["toDate"] = toDate;
+
+                    DateTime FDate = DateTime.ParseExact(fromDate, "dd/MM/yyyy", System.Globalization.CultureInfo.CurrentCulture);
+                    DateTime TDate = DateTime.ParseExact(toDate, "dd/MM/yyyy HH:mm:ss", System.Globalization.CultureInfo.CurrentCulture);
+
+
+
+
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            return View(models);
+        }
+        public ActionResult ViewIndentReport(string fromDate, string toDate)
+        {
+            return PartialView("_IndentWiseReport", GetIndentReport(fromDate, toDate));
+            //return View("CustomerOrderItem", GetCustomerOrderItems(Id));
+        }
+        public List<IndentRepoort> GetIndentReport(string fromDate, string toDate)
+        {
+            List<IndentRepoort> models = new List<IndentRepoort>();
+            if (string.IsNullOrEmpty(fromDate))
+            {
+                fromDate = DateTime.Now.AddDays(-30).ToString("dd/MM/yyyy");
+            }
+            if (string.IsNullOrEmpty(toDate))
+            {
+                toDate = DateTime.Now.ToString("dd/MM/yyyy 23:59:59");
+            }
+            else
+            {
+                toDate += " 23:59:59";
+            }
+            ViewData["fromDate"] = fromDate;
+            ViewData["toDate"] = toDate;
+
+            DateTime FDate = DateTime.ParseExact(fromDate, "dd/MM/yyyy", System.Globalization.CultureInfo.CurrentCulture);
+            DateTime TDate = DateTime.ParseExact(toDate, "dd/MM/yyyy HH:mm:ss", System.Globalization.CultureInfo.CurrentCulture);
+
+
+
+            // models.fromDate = string.Format("{0:dd/MM/yyyy}", fromDate);
+            // models.toDate = string.Format("{0:dd/MM/yyyy}", toDate);
+
+
+
+            try
+            {
+                using (ApplicationContext db = new ApplicationContext())
+                {
+
+
+                    models = db.IndentItems
+                        .Where(x => x.IsActive && x.CreatedOn >= FDate && x.CreatedOn <= TDate)
+                        .GroupBy(g => new { g.IndentCode })
+                        .Select(S => new IndentRepoort
+                        {
+                            CreatedOn = S.FirstOrDefault().CreatedOn,
+                            FromDate = fromDate,
+                            ToDate = toDate,
+                            IndentCode = S.Key.IndentCode,
+                            IndentItemRepoort = db.IndentItems.Join(db.ItemDetails, II => II.ItemId, ID => ID.item_id, (II, ID) => new { II, ID })
+                            .Where(IW => IW.II.IndentCode == S.Key.IndentCode)
+                                               .Select(IS => new IndentItemRepoort
+                                               {
+                                                   IndentCode = IS.II.IndentCode,
+                                                   CreatedOn = IS.II.CreatedOn,
+                                                   Id = IS.II.Id,
+                                                   ItemId = IS.II.ItemId,
+                                                   ItemName = IS.ID.item_name,
+                                                   Qty = IS.II.Qty,
+                                               }).ToList()
+                        }).ToList();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                //if (Helpers.WriteExceptionsToEventLog)
+                //{ Helpers.WriteToErrorLog(ex, "GetTokenReports()"); }
+                //else
+                { throw ex; }
+            }
+
+            return models;
+        }
+
+
+    }
+}
+
+                          @model List<OrmasPuri.Models.StockItemModel>
+  
+@{
+    ViewBag.Title = "Stock Report";
+    // Layout = "~/Views/Shared/_Masterlayout.cshtml";
+    //string fromDate = Request.QueryString["fromDate"];
+    //string toDate = Request.QueryString["toDate"];
+}
+
+@section css{
+
+    <link href="~/Content/ViewCss.css" rel="stylesheet" />
+
+    <style>
+        .Strong {
+            font-weight: 600;
+        }
+
+        .table-bordered > tfoot > tr > th {
+            border: 1px solid #ddd;
+            color: #000;
+            border-right: 1px solid #c7c3c3;
+        }
+    </style>
+}
+
+<div class="container-fluid">
+    <div class="section-body">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <div class="panel panel-default" id="mycard-closable">
+                    <div class="panel-heading">
+                        <h4 class="font-weight-bold"><i class="fa "></i> Filter(s)</h4>
+                    </div>
+                    <form id="frmFilter">
+                        <div class="panel-collapse">
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-lg-3 form-group">
+                                        <div class="input-group">
+                                            <div><img src="~/Img/Calendar.png" width="35" class="mr-2" /></div>
+
+                                            <div id="DateRange" class="form-control form-control-sm" style="min-height:42px;">
+                                                <span class="lbl"></span> <i class="fa fa-caret-down"></i>
+                                                <input type="hidden" id="fromDate" name="fromDate" value="@ViewData["fromDate"]" />
+                                                <input type="hidden" id="toDate" name="toDate" value="@ViewData["toDate"]" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        <div class="filt-search-button">
+
+                                            <a id="btnSubmit" class="btn btn-block" href="javascript:void(0);" data-toggle="tooltip" data-original-title="Search"><i class="fa fa-search" aria-hidden="true"></i> <span class="text-sm">Search </span></a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-3 form-group">
+                                        @Html.Label("Select Food Category", new { @class = "form-label" })
+                                        @Html.DropDownList("ItemId", OrmasPuri.Models.AppModel.SelectListItemsFromFoodCategory("---Choose Item---"), new { @class = "form-select ItemId me-1", style = "width: 240px;min-height: 44px" })
+                                        @*@Html.ValidationMessageFor(model => model.item_id, "", new { @class = "text-danger" })*@
+                                    </div>
+                                </div>
+
+
+                                <div class="row pull-right">
+                                    <div class="download-file">
+                                        <a id="btnDownExlInd" class="btn btn-sm btn-primary" href="javascript:void(0);" data-toggle="tooltip" data-original-title="Download Excel"><img src="~/Img/ExcelNew.png" width="35" /></a>
+                                        <a id="btnDownPdflInd" class="btn btn-sm btn-primary" href="javascript:void(0);" data-toggle="tooltip" data-original-title="Download Pdf"><img src="~/Img/PdfNew.png" width="35" /></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div id="stock-wrapper" >
+         
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript">
+     $(document).ready(function () {
+         var fromDate = $('#fromDate').val();
+         var toDate = $('#toDate').val();
+         //var startDate = moment(fromDate, 'MM/DD/YYYY');
+         //var endDate = moment(toDate, 'MM/DD/YYYY');
+         var startDate = moment(fromDate, 'DD/MM/YYYY');
+         var endDate = moment(toDate, 'DD/MM/YYYY');
+         $('#DateRange').daterangepicker({
+             showDropdowns: true,
+             locale: {
+                 format: 'DD/MM/YYYY'
+                // format: 'MM/DD/YYYY'
+
+             },
+             startDate: startDate,
+             endDate: endDate,
+             ranges: {
+                 'Today': [moment(), moment()],
+                 'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                 //'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                 //'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                 //'Last 90 Days': [moment().subtract(89, 'days'), moment()],
+                 //'Last 365 Days': [moment().subtract(364, 'days'), moment()],
+                 'This Month': [moment().startOf('month'), moment().endOf('month')],
+                 'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                 'Last 2 Month': [moment().subtract(2, 'month').startOf('month'), moment().subtract(0, 'month').endOf('month')],
+                // 'Last Year': [moment().subtract(2, 'month').startOf('month'), moment().subtract(0, 'month').endOf('month')],
+                 'Last 1 Year': [moment().subtract(364, 'days'), moment()]
+             }
+         }, updateDates);
+         updateDates(startDate, endDate);
+
+         GetStock();
+
+
+         $("body").on("click", "#btnSubmit", function (e) {
+             GetStock();
+         });
+
+     //    $("body").on("click", ".lnkToken", function (e) {
+     //        $('#hdnIndentCode').val($(this).data("indentcode"));
+     //        $('#Token-Details-Modal').modal('show');
+     //});
+
+         @*$('#Indent-Details-Modal').on('shown.bs.modal', function (e) {
+            // var Id = $('#COId').val();
+             $("#loading").show();
+             var $tokenwrapper = $('#indent-detail-wrapper');
+             var indentCode = $('#hdnIndentCode').val();
+             var fromDate = $('#fromDate').val();
+             var toDate = $('#toDate').val();
+
+             $tokenwrapper.html('');
+             $.get('@Url.Action("IndentItemDetails", "Report")', { 'fromDate': fromDate, 'toDate': toDate, 'indentCode': indentCode}, function (data) {
+                 $("#loading").hide();
+                 $tokenwrapper.html(data);
+             });
+         });*@
+
+         //Download Excel Sheet........
+
+         $("#btnDownExlInd").click(function (e) {
+             $("#loading").show();
+             //var indentCode = $('#hdnIndentCode').val();
+             var fromDate = $('#fromDate').val();
+             var toDate = $('#toDate').val();
+
+             var params = { 'fromDate': fromDate, 'toDate': toDate};
+             $.ajax({
+                 type: "POST",
+                 cache: false,
+                 url: "@Url.Action("WriteExcelIndent", "Download")",
+                 data: JSON.stringify(params),
+                 dataType: 'json',
+                 contentType: 'application/json; charset=utf-8',
+                 success: function (data)
+                 {
+                     $("#loading").hide();
+                     window.location = '@Url.Action("DownloadIndent", "Download")?fileGuid=' + data.FileGuid
+                     + '&filename=' + data.FileName;
+                 },
+                 error: function (data, success, error) {
+                     $("#loading").hide();
+                     callNotify(error, 'danger');
+                 }
+             })
+         });
+
+         //Download PDF...
+         $('body').on("click", "#btnDownPdflInd", function () {
+         //var indentCode = $('#hdnIndentCode').val();
+             var fromDate = $('#fromDate').val();
+             var toDate = $('#toDate').val();
+
+
+             var Url = '@Url.Action("DownloadPdfIndent", "Download")?fromDate=' + fromDate + '&toDate=' + toDate;
+             var win = window.open(Url, '_blank');
+             if (win) {
+                 //Browser has allowed it to be opened
+                 win.focus();
+             } else {
+                 //Browser has blocked it
+                 alert('Please allow popups for this website');
+             }
+         });
+
+
+
+
+
+     });
+     function updateDates(startDate, endDate) {
+             //$('#fromDate').val(startDate.format('MM/DD/YYYY'));
+             //$('#toDate').val(endDate.format('MM/DD/YYYY'));
+         $('#fromDate').val(startDate.format('DD/MM/YYYY'));
+         $('#toDate').val(endDate.format('DD/MM/YYYY'));
+         $('#DateRange span.lbl').html(startDate.format('DD/MM/YYYY') + ' - ' + endDate.format('DD/MM/YYYY'));
+             //$('#DateRange span.lbl').html(startDate.format('MM/DD/YYYY') + ' - ' + endDate.format('MM/DD/YYYY'));
+            // GetPrintedDate();
+     }
+     function GetStock() {
+         $("#loading").show();
+         var $tokenwrapper = $('#stock-wrapper');
+             //var indentCode = $('#hdnIndentCode').val();
+             var fromDate = $('#fromDate').val();
+             var toDate = $('#toDate').val();
+             var itemId = $('#ItemId').val(); 
+
+         $tokenwrapper.html('');
+         $.get('@Url.Action("ViewStockReport", "Report")', { 'fromDate': fromDate, 'toDate': toDate, 'itemId': itemId }, function (data) {
+             $("#loading").hide();
+             $tokenwrapper.html(data);
+             });
+     }
+    </script>
+}
+

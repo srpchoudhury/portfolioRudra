@@ -970,18 +970,17 @@ EXEC CalculateWastageDamageType @ItemId, @FromDate, @ToDate;
 =============================================================================================================================================================
                                   final procedure
 		===================================================
-DECLARE @ItemId INT = null;
-DECLARE @FromDate DATETIME = '2020-11-11'; -- Use 'YYYY-MM-DD' format for unambiguous date literals
-DECLARE @ToDate DATETIME = '2023-11-16';   -- Use 'YYYY-MM-DD' format for unambiguous date literals
-DECLARE @Event VARCHAR(50) = 'StockDamageQuantity'; -- Specify the length for the VARCHAR variable
+USE [TestBetontiGrocery_DB]
+GO
 
--- Execute the stored procedure
-EXEC sp_StockReports  @FromDate, @ToDate,@ItemId, @Event;
+/****** Object:  StoredProcedure [dbo].[sp_StockReports]    Script Date: 18-11-2023 10:35:54 ******/
+SET ANSI_NULLS ON
+GO
 
+SET QUOTED_IDENTIFIER ON
+GO
 
-use TestBetontiGrocery_DB;
-Go
-create procedure [dbo].[sp_StockReports]
+CREATE procedure [dbo].[sp_StockReports]
 
 @FromDate datetime,
 @ToDate datetime,
@@ -990,7 +989,7 @@ create procedure [dbo].[sp_StockReports]
 
 as
 begin 
-    if(@Event='ItemDetails')
+     if(@Event='ItemDetails')
 BEGIN
     SELECT ROW_NUMBER() OVER (ORDER BY id.category_name) AS SERIAL,
            (id.item_name + '-' + id.UPS_code) AS item_name,
@@ -1006,7 +1005,7 @@ END
 begin
  WITH OpeningStock AS 
     (
-        SELECT Item_Id, SUM(Quantity) AS OpeningQuantity 
+        SELECT Item_Id, ISNULL(SUM(Quantity), 0) AS OpeningQuantity 
         FROM Stock_Entry 
         WHERE Is_Status = 1 AND ((@ItemId IS NULL) OR (Item_Id = @ItemId))
         AND CONVERT(DATETIME, Date, 103) < CONVERT(DATETIME, @FromDate, 103)  
@@ -1014,7 +1013,7 @@ begin
     ),
     ReceivedStock AS
     (
-        SELECT Item_Id, SUM(Quantity) AS OpeningQuantity 
+        SELECT Item_Id,ISNULL(SUM(Quantity), 0) AS OpeningQuantity 
         FROM Store_Transfer 
         WHERE Status = 1 AND StockType = 'Receive'
         AND ((@ItemId IS NULL) OR (Item_Id = @ItemId)) 
@@ -1023,7 +1022,7 @@ begin
     ),
     TransferredStock AS
     (
-        SELECT Item_Id, SUM(Quantity) AS OpeningQuantity 
+        SELECT Item_Id, ISNULL(SUM(Quantity), 0) AS OpeningQuantity 
         FROM Store_Transfer 
         WHERE Status = 1 AND StockType = 'Transfer'
         AND ((@ItemId IS NULL) OR (Item_Id = @ItemId)) 
@@ -1032,7 +1031,7 @@ begin
     ),
     BillStock AS
     (
-        SELECT itemid AS Item_Id, SUM(Quantity) AS OpeningQuantity 
+        SELECT itemid AS Item_Id, ISNULL(SUM(Quantity), 0) AS OpeningQuantity 
         FROM Bill_Details 
         WHERE CONVERT(DATETIME, Date, 103) < CONVERT(DATETIME, @FromDate, 103) 
         AND Delete_Status IS NULL AND ((@ItemId IS NULL) OR (itemid = @ItemId)) 
@@ -1040,7 +1039,7 @@ begin
     ),
     WastageStock AS
     (
-        SELECT Item_Id, SUM(Wastage) AS OpeningQuantity 
+        SELECT Item_Id, ISNULL(SUM(Wastage),0) AS OpeningQuantity 
         FROM Wastage_Details 
         WHERE CONVERT(DATETIME, Date, 103) < CONVERT(DATETIME, @FromDate, 103) 
         AND ((@ItemId IS NULL) OR (Item_Id = @ItemId)) 
@@ -1048,7 +1047,7 @@ begin
     ),
     CreditNoteStock AS 
     (
-        SELECT Item_Id, SUM(Quantity) AS OpeningQuantity 
+        SELECT Item_Id,ISNULL(SUM(Quantity), 0) AS OpeningQuantity 
         FROM CREDIT_NOTEBOOK_ITEM_DETAILS 
         WHERE ((@ItemId IS NULL) OR (Item_Id = @ItemId)) 
         AND CONVERT(DATETIME, Date, 103) < CONVERT(DATETIME, @FromDate, 103) 
@@ -1056,7 +1055,7 @@ begin
     ),
     DebitNoteStock AS 
     (
-        SELECT Item_Id, SUM(Quantity) AS OpeningQuantity 
+        SELECT Item_Id, ISNULL(SUM(Quantity), 0) AS OpeningQuantity 
         FROM DEBIT_NOTEBOOK_ITEM_DETAILS 
         WHERE ((@ItemId IS NULL) OR (Item_Id = @ItemId)) 
         AND CONVERT(DATETIME, Date, 103) < CONVERT(DATETIME, @FromDate, 103) 
@@ -1066,7 +1065,7 @@ begin
         COALESCE(OpeningStock.Item_Id, ReceivedStock.Item_Id, TransferredStock.Item_Id, BillStock.Item_Id, WastageStock.Item_Id, CreditNoteStock.Item_Id, DebitNoteStock.Item_Id) AS Item_Id,
         COALESCE(OpeningStock.OpeningQuantity, 0) + COALESCE(ReceivedStock.OpeningQuantity, 0) 
         - (COALESCE(TransferredStock.OpeningQuantity, 0) + COALESCE(BillStock.OpeningQuantity, 0) + COALESCE(WastageStock.OpeningQuantity, 0) 
-        - COALESCE(CreditNoteStock.OpeningQuantity, 0) + COALESCE(DebitNoteStock.OpeningQuantity, 0)) AS Result
+        - COALESCE(CreditNoteStock.OpeningQuantity, 0) + COALESCE(DebitNoteStock.OpeningQuantity, 0)) AS OpeningQuantity
     FROM  OpeningStock
         FULL OUTER JOIN ReceivedStock ON OpeningStock.Item_Id = ReceivedStock.Item_Id
         FULL OUTER JOIN TransferredStock ON OpeningStock.Item_Id = TransferredStock.Item_Id
@@ -1079,14 +1078,14 @@ end
 else if(@Event='StockInQuantity')
 begin
     -- Combine the results 
-    SELECT SUM(TotalQuantity) AS InQuantity, Item_Id
+    SELECT SUM(TotalQuantity) AS StockInQuantity, Item_Id
     FROM
     (
         -- Calculate the sum of quantity for Stock_Entry
-        SELECT SUM(T1.TotalQuantity) AS TotalQuantity, T1.Item_Id
+        SELECT ISNULL(SUM(T1.TotalQuantity),0) AS TotalQuantity, T1.Item_Id
         FROM
         (
-            SELECT Item_Id, SUM(Quantity) AS TotalQuantity
+            SELECT Item_Id, ISNULL(SUM(Quantity),0) AS TotalQuantity
             FROM Stock_Entry
             WHERE Is_Status = 1 
                 AND ((@ItemId IS NULL) OR (Item_Id = @ItemId))
@@ -1098,10 +1097,10 @@ begin
         UNION ALL
 
         -- Calculate the sum of quantity for Store_Transfer
-        SELECT SUM(T2.TotalQuantity) AS TotalQuantity, T2.Item_Id
+        SELECT ISNULL(SUM(T2.TotalQuantity),0) AS TotalQuantity, T2.Item_Id
         FROM
         (
-            SELECT Item_Id, SUM(Quantity) AS TotalQuantity
+            SELECT Item_Id, ISNULL(SUM(Quantity),0) AS TotalQuantity
             FROM Store_Transfer
             WHERE StockType = 'Receive'
                 AND Status = 1 
@@ -1157,7 +1156,7 @@ begin
     )
     -- Combine and subtract the results
     SELECT
-        COALESCE(B.TotalQuantity, 0) + COALESCE(ST.TotalQuantity, 0) - COALESCE(CN.TotalQuantity, 0) AS TotalQuantity,
+        COALESCE(B.TotalQuantity, 0) + COALESCE(ST.TotalQuantity, 0) - COALESCE(CN.TotalQuantity, 0) AS StockOutQuantity,
         COALESCE(B.itemid, ST.Item_Id, CN.Item_Id) AS Item_Id
     FROM
         BillDetailsSum B
@@ -1170,7 +1169,7 @@ end
 else if(@Event='StockReturnQuantity')
 begin
     SELECT
-        SUM(Wastage) AS ReturnType,
+        ISNULL(SUM(Wastage),0) AS ReturnQuantity,
         Item_Id
     FROM
         Wastage_Details
@@ -1185,7 +1184,7 @@ else if(@Event='StockDamageQuantity')
 begin
     -- Calculate the sum of wastage for Damage Type
     SELECT
-        SUM(Wastage) AS DamageType,
+        ISNULL(SUM(Wastage),0) AS DamageQuantity,
         Item_Id
     FROM
         Wastage_Details
@@ -1197,6 +1196,7 @@ begin
 end
 
 End
+GO
 
 
 
